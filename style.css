@@ -81,14 +81,10 @@ body {
     to { transform: translateX(0); opacity: 1; }
 }
 
-.sidebar:hover {
-    transform: translateX(5px);
-}
-
 .logo {
     display: flex;
     align-items: center;
-    margin-bottom: 50px;
+    margin-bottom: 20px;
     transition: transform 0.3s ease;
 }
 
@@ -109,6 +105,39 @@ body {
     font-weight: 600;
     color: var(--accent-blue);
     letter-spacing: 0.5px;
+}
+
+.language-selector, .theme-toggle {
+    margin-bottom: 20px;
+    padding: 0;
+    border: none;
+    position: static;
+    width: 100%;
+}
+
+.theme-toggle label {
+    color: var(--text-secondary);
+    font-size: 14px;
+}
+
+.theme-toggle select {
+    width: 100%;
+    padding: 10px;
+    background-color: var(--bg-dark);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    transition: all var(--transition-fast);
+}
+
+.theme-toggle select:hover {
+    transform: scale(1.05);
+}
+
+.settings {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
 }
 
 .input-group {
@@ -216,7 +245,7 @@ select:focus {
 }
 
 .main-content:hover {
-    transform: translateY(-5px);
+    transform: none;
 }
 
 .signal-block, .chart-block {
@@ -231,7 +260,7 @@ select:focus {
 
 .signal-block:hover, .chart-block:hover {
     box-shadow: var(--shadow-hover);
-    transform: translateY(-3px) rotate(1deg);
+    transform: none;
 }
 
 .signal-header, .chart-header {
@@ -332,33 +361,6 @@ select:focus {
     box-shadow: 0 0 12px rgba(244, 67, 54, 0.2);
 }
 
-.language-selector, .theme-toggle {
-    margin-top: 20px;
-    padding-top: 20px;
-    border-top: 1px solid var(--border-color);
-    left: 30px;
-    width: calc(100% - 60px);
-}
-
-.theme-toggle label {
-    color: var(--text-secondary);
-    font-size: 14px;
-}
-
-.theme-toggle select {
-    width: auto;
-    padding: 10px;
-    background-color: var(--bg-dark);
-    color: var(--text-primary);
-    border: 1px solid var(--border-color);
-    border-radius: 8px;
-    transition: all var(--transition-fast);
-}
-
-.theme-toggle select:hover {
-    transform: scale(1.05);
-}
-
 /* Responsive */
 @media screen and (max-width: 1024px) and (min-width: 769px) {
     .sidebar {
@@ -387,7 +389,7 @@ select:focus {
 
     .logo {
         justify-content: center;
-        margin-bottom: 30px;
+        margin-bottom: 20px;
     }
 
     .main-content {
@@ -421,10 +423,7 @@ select:focus {
     }
 
     .language-selector, .theme-toggle {
-        position: static;
-        left: auto;
-        top: auto;
-        width: auto;
+        margin-bottom: 10px;
     }
 }
 
