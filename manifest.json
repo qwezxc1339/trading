@@ -1,0 +1,21 @@
+{
+  "name": "Trading Signal Pro",
+  "short_name": "TradeSignal",
+  "description": "Приложение для торговых сигналов",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#0A0A0A",
+  "theme_color": "#2196F3",
+  "icons": [
+    {
+      "src": "https://api.dicebear.com/7.x/icons/svg?seed=tradepro",
+      "sizes": "192x192",
+      "type": "image/svg+xml"
+    },
+    {
+      "src": "https://api.dicebear.com/7.x/icons/svg?seed=tradepro",
+      "sizes": "512x512",
+      "type": "image/svg+xml"
+    }
+  ]
+}
