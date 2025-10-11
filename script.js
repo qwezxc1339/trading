@@ -78,6 +78,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 updateChart(currencyPair, isBuy, accuracy);
 
                 generateButton.classList.remove('loading');
+                generateButton.textContent = translations[language].waiting; // Reset to waiting? No, better to reset after cooldown
             } catch (error) {
                 console.error(error);
                 signalResult.innerHTML = `<div class="signal-error">Ошибка генерации сигнала. Попробуйте снова.</div>`;
