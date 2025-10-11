@@ -109,39 +109,6 @@ document.addEventListener("DOMContentLoaded", () => {
     const savedTheme = localStorage.getItem("theme") || "dark";
     document.body.classList.add(savedTheme + "-theme");
     document.getElementById("theme-select").value = savedTheme;
-
-    // Выравнивание языка и темы
-    function alignSelectors() {
-        if (window.innerWidth <= 768) {
-            document.getElementById("language-selector").style.position = '';
-            document.getElementById("language-selector").style.top = '';
-            document.getElementById("theme-toggle").style.position = '';
-            document.getElementById("theme-toggle").style.top = '';
-            return;
-        }
-
-        const chartBlock = document.getElementById("chart-block");
-        const sidebar = document.querySelector(".sidebar");
-        const languageSelector = document.getElementById("language-selector");
-        const themeToggle = document.getElementById("theme-toggle");
-
-        const chartRect = chartBlock.getBoundingClientRect();
-        const sidebarRect = sidebar.getBoundingClientRect();
-
-        const relativeBottom = chartRect.bottom - sidebarRect.top;
-
-        const themeHeight = themeToggle.getBoundingClientRect().height;
-        const languageHeight = languageSelector.getBoundingClientRect().height;
-
-        themeToggle.style.position = 'absolute';
-        themeToggle.style.top = `${relativeBottom - themeHeight}px`;
-
-        languageSelector.style.position = 'absolute';
-        languageSelector.style.top = `${relativeBottom - themeHeight - languageHeight - 10}px`; // 10px gap
-    }
-
-    alignSelectors();
-    window.addEventListener('resize', alignSelectors);
 });
 
 function startCooldown(pair) {
@@ -344,7 +311,7 @@ function updateChart(pair, isBuy, accuracy) {
     function zoomed(event) {
         const newX = event.transform.rescaleX(x);
         const newY = event.transform.rescaleY(y);
-        svg.selectAll("path.line").attr("d", line.x(d => newX(d.time)));
+        svg.selectAll("path.line").attr("d", line.x(d => newX(d.time)).y(d => newY(d.value)));
         svg.selectAll("path.area").attr("d", area.x(d => newX(d.time)).y1(d => newY(d.value)));
         svg.selectAll("circle").attr("cx", d => newX(d.time)).attr("cy", d => newY(d.value));
         svg.select(".x-axis").call(d3.axisBottom(newX));
@@ -440,7 +407,6 @@ function changeLanguage() {
     });
 
     resetSignalAndChart();
-    alignSelectors(); // Realign after change
 }
 
 function toggleTheme() {
@@ -452,6 +418,5 @@ function toggleTheme() {
     document.body.style.transition = "background-color 0.5s ease, color 0.5s ease";
     setTimeout(() => {
         document.body.style.transition = "";
-        alignSelectors(); // Realign after theme change
     }, 500);
 }
