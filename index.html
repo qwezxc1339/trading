@@ -7,11 +7,11 @@
     <link rel="stylesheet" href="style.css">
     <script src="https://d3js.org/d3.v7.min.js"></script>
 </head>
-<body>
+<body class="dark-theme">
     <div class="container">
         <aside class="sidebar">
             <div class="logo">
-                <img src="https://api.dicebear.com/7.x/icons/svg?seed=tradepro" alt="Логотип Trade Signal">
+                <img loading="lazy" src="https://api.dicebear.com/7.x/icons/svg?seed=tradepro" alt="Логотип Trade Signal">
                 <h1 id="logo-text">Trade Signal</h1>
             </div>
             <div class="settings">
@@ -76,6 +76,10 @@
                     <option value="en">English</option>
                     <option value="uz">O'zbek</option>
                 </select>
+            </div>
+            <div class="theme-toggle">
+                <label for="theme-switch">Тёмная тема</label>
+                <input type="checkbox" id="theme-switch" checked onchange="toggleTheme()">
             </div>
         </aside>
         <main class="main-content">
