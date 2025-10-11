@@ -78,7 +78,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 updateChart(currencyPair, isBuy, accuracy);
 
                 generateButton.classList.remove('loading');
-                generateButton.textContent = translations[language].waiting; // Reset to waiting? No, better to reset after cooldown
             } catch (error) {
                 console.error(error);
                 signalResult.innerHTML = `<div class="signal-error">Ошибка генерации сигнала. Попробуйте снова.</div>`;
@@ -110,6 +109,39 @@ document.addEventListener("DOMContentLoaded", () => {
     const savedTheme = localStorage.getItem("theme") || "dark";
     document.body.classList.add(savedTheme + "-theme");
     document.getElementById("theme-select").value = savedTheme;
+
+    // Выравнивание языка и темы
+    function alignSelectors() {
+        if (window.innerWidth <= 768) {
+            document.getElementById("language-selector").style.position = '';
+            document.getElementById("language-selector").style.top = '';
+            document.getElementById("theme-toggle").style.position = '';
+            document.getElementById("theme-toggle").style.top = '';
+            return;
+        }
+
+        const chartBlock = document.getElementById("chart-block");
+        const sidebar = document.querySelector(".sidebar");
+        const languageSelector = document.getElementById("language-selector");
+        const themeToggle = document.getElementById("theme-toggle");
+
+        const chartRect = chartBlock.getBoundingClientRect();
+        const sidebarRect = sidebar.getBoundingClientRect();
+
+        const relativeBottom = chartRect.bottom - sidebarRect.top;
+
+        const themeHeight = themeToggle.getBoundingClientRect().height;
+        const languageHeight = languageSelector.getBoundingClientRect().height;
+
+        themeToggle.style.position = 'absolute';
+        themeToggle.style.top = `${relativeBottom - themeHeight}px`;
+
+        languageSelector.style.position = 'absolute';
+        languageSelector.style.top = `${relativeBottom - themeHeight - languageHeight - 10}px`; // 10px gap
+    }
+
+    alignSelectors();
+    window.addEventListener('resize', alignSelectors);
 });
 
 function startCooldown(pair) {
@@ -408,6 +440,7 @@ function changeLanguage() {
     });
 
     resetSignalAndChart();
+    alignSelectors(); // Realign after change
 }
 
 function toggleTheme() {
@@ -419,5 +452,6 @@ function toggleTheme() {
     document.body.style.transition = "background-color 0.5s ease, color 0.5s ease";
     setTimeout(() => {
         document.body.style.transition = "";
+        alignSelectors(); // Realign after theme change
     }, 500);
 }
