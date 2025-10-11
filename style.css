@@ -107,33 +107,6 @@ body {
     letter-spacing: 0.5px;
 }
 
-.language-selector, .theme-toggle {
-    margin-bottom: 20px;
-    padding: 0;
-    border: none;
-    position: static;
-    width: 100%;
-}
-
-.theme-toggle label {
-    color: var(--text-secondary);
-    font-size: 14px;
-}
-
-.theme-toggle select {
-    width: 100%;
-    padding: 10px;
-    background-color: var(--bg-dark);
-    color: var(--text-primary);
-    border: 1px solid var(--border-color);
-    border-radius: 8px;
-    transition: all var(--transition-fast);
-}
-
-.theme-toggle select:hover {
-    transform: scale(1.05);
-}
-
 .settings {
     flex-grow: 1;
     display: flex;
@@ -420,10 +393,6 @@ select:focus {
     select, #generate-btn {
         padding: 16px;
         font-size: 16px;
-    }
-
-    .language-selector, .theme-toggle {
-        margin-bottom: 10px;
     }
 }
 
