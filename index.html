@@ -3,6 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#0A0A0A">
+    <link rel="manifest" href="manifest.json">
     <title>Trading Signal Pro</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://d3js.org/d3.v7.min.js"></script>
@@ -78,8 +80,11 @@
                 </select>
             </div>
             <div class="theme-toggle">
-                <label for="theme-switch">Тёмная тема</label>
-                <input type="checkbox" id="theme-switch" checked onchange="toggleTheme()">
+                <label for="theme-select">Тема</label>
+                <select id="theme-select" onchange="toggleTheme()">
+                    <option value="dark">Тёмная</option>
+                    <option value="light">Светлая</option>
+                </select>
             </div>
         </aside>
         <main class="main-content">
@@ -103,5 +108,12 @@
         </main>
     </div>
     <script src="script.js"></script>
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js');
+            });
+        }
+    </script>
 </body>
 </html>
