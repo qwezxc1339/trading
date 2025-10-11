@@ -16,6 +16,21 @@
                 <img loading="lazy" src="https://api.dicebear.com/7.x/icons/svg?seed=tradepro" alt="Логотип Trade Signal">
                 <h1 id="logo-text">Trade Signal</h1>
             </div>
+            <div id="language-selector" class="language-selector">
+                <label for="language">Язык</label>
+                <select id="language" onchange="changeLanguage()" aria-label="Выбор языка">
+                    <option value="ru">Русский</option>
+                    <option value="en">English</option>
+                    <option value="uz">O'zbek</option>
+                </select>
+            </div>
+            <div id="theme-toggle" class="theme-toggle">
+                <label for="theme-select">Тема</label>
+                <select id="theme-select" onchange="toggleTheme()">
+                    <option value="dark">Тёмная</option>
+                    <option value="light">Светлая</option>
+                </select>
+            </div>
             <div class="settings">
                 <div class="input-group">
                     <label id="currency-label" for="currency-pair">Актив</label>
@@ -70,21 +85,6 @@
                     </select>
                 </div>
                 <button id="generate-btn" aria-label="Получить торговый сигнал">Получить сигнал</button>
-            </div>
-            <div id="language-selector" class="language-selector">
-                <label for="language">Язык</label>
-                <select id="language" onchange="changeLanguage()" aria-label="Выбор языка">
-                    <option value="ru">Русский</option>
-                    <option value="en">English</option>
-                    <option value="uz">O'zbek</option>
-                </select>
-            </div>
-            <div id="theme-toggle" class="theme-toggle">
-                <label for="theme-select">Тема</label>
-                <select id="theme-select" onchange="toggleTheme()">
-                    <option value="dark">Тёмная</option>
-                    <option value="light">Светлая</option>
-                </select>
             </div>
         </aside>
         <main class="main-content">
