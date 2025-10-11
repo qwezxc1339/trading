@@ -15,6 +15,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     generateButton.addEventListener("click", () => {
         generateButton.disabled = true;
+        generateButton.classList.add('loading');
         generateButton.textContent = translations[document.getElementById("language").value].waiting;
         console.log("Button clicked, generating signal...");
 
@@ -34,11 +35,13 @@ document.addEventListener("DOMContentLoaded", () => {
             });
 
             const language = document.getElementById("language").value;
+            const directionText = isBuy ? translations[language].buy : translations[language].sell;
+            const icon = isBuy ? '↑' : '↓';
             const signalDetails = `
                 <div class="signal-details">
                     <div class="signal-pair">${currencyPair}</div>
                     <div class="signal-direction ${isBuy ? "green" : "red"}">
-                        ${isBuy ? translations[language].buy : translations[language].sell}
+                        ${icon} ${directionText}
                     </div>
                     <div class="signal-timeframe">${translations[language].timeframe}: ${timeframeText}</div>
                     <div class="signal-probability">${translations[language].accuracy}: ${accuracy}%</div>
@@ -56,8 +59,10 @@ document.addEventListener("DOMContentLoaded", () => {
             cooldowns[currencyPair] = { endTime };
             startCooldown(currencyPair);
 
-            // Обновление графика (заглушка)
+            // Обновление графика
             updateChart(currencyPair, isBuy, accuracy);
+
+            generateButton.classList.remove('loading');
         }, 1000);
     });
 
@@ -132,12 +137,14 @@ function initChart() {
 
     const width = chartContainer.node().getBoundingClientRect().width;
     const height = 400;
-    const margin = { top: 20, right: 20, bottom: 30, left: 40 };
+    const margin = { top: 20, right: 30, bottom: 40, left: 50 };
 
     const svg = chartContainer
         .append("svg")
         .attr("width", width)
-        .attr("height", height);
+        .attr("height", height)
+        .attr("viewBox", `0 0 ${width} ${height}`)
+        .attr("preserveAspectRatio", "xMidYMid meet");
 
     svg.append("text")
         .attr("x", width / 2)
@@ -153,17 +160,19 @@ function updateChart(pair, isBuy, accuracy) {
 
     const width = chartContainer.node().getBoundingClientRect().width;
     const height = 400;
-    const margin = { top: 20, right: 20, bottom: 30, left: 40 };
+    const margin = { top: 20, right: 30, bottom: 40, left: 50 };
 
     const svg = chartContainer
         .append("svg")
         .attr("width", width)
-        .attr("height", height);
+        .attr("height", height)
+        .attr("viewBox", `0 0 ${width} ${height}`)
+        .attr("preserveAspectRatio", "xMidYMid meet");
 
-    // Пример данных для графика
-    const data = Array.from({ length: 10 }, (_, i) => ({
+    // Более реалистичные данные для графика
+    const data = Array.from({ length: 30 }, (_, i) => ({
         time: i,
-        value: 100 + Math.random() * 50 * (isBuy ? 1 : -1)
+        value: 100 + (Math.random() - 0.5) * 10 * i * (isBuy ? 1 : -1)
     }));
 
     const x = d3.scaleLinear()
@@ -177,22 +186,51 @@ function updateChart(pair, isBuy, accuracy) {
     const line = d3.line()
         .x(d => x(d.time))
         .y(d => y(d.value))
-        .curve(d3.curveMonotoneX);
+        .curve(d3.curveCatmullRom.alpha(0.5));
+
+    const area = d3.area()
+        .x(d => x(d.time))
+        .y0(height - margin.bottom)
+        .y1(d => y(d.value))
+        .curve(d3.curveCatmullRom.alpha(0.5));
+
+    // Градиент для области
+    const gradient = svg.append("defs")
+        .append("linearGradient")
+        .attr("id", "area-gradient")
+        .attr("gradientUnits", "userSpaceOnUse")
+        .attr("x1", 0).attr("y1", y(d3.min(data, d => d.value)))
+        .attr("x2", 0).attr("y2", y(d3.max(data, d => d.value)));
+
+    gradient.append("stop")
+        .attr("offset", "0%")
+        .attr("stop-color", isBuy ? "rgba(0, 230, 118, 0.2)" : "rgba(255, 82, 82, 0.2)");
+
+    gradient.append("stop")
+        .attr("offset", "100%")
+        .attr("stop-color", "rgba(0, 0, 0, 0)");
+
+    svg.append("path")
+        .datum(data)
+        .attr("fill", "url(#area-gradient)")
+        .attr("d", area);
 
     svg.append("path")
         .datum(data)
         .attr("fill", "none")
         .attr("stroke", isBuy ? "#00E676" : "#FF5252")
-        .attr("stroke-width", 2)
+        .attr("stroke-width", 2.5)
         .attr("d", line);
 
     svg.append("g")
         .attr("transform", `translate(0,${height - margin.bottom})`)
-        .call(d3.axisBottom(x).ticks(5));
+        .call(d3.axisBottom(x).ticks(5).tickSizeOuter(0))
+        .attr("color", "#555");
 
     svg.append("g")
         .attr("transform", `translate(${margin.left},0)`)
-        .call(d3.axisLeft(y));
+        .call(d3.axisLeft(y).ticks(5).tickSizeOuter(0))
+        .attr("color", "#555");
 }
 
 const translations = {
