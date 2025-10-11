@@ -22,47 +22,63 @@ document.addEventListener("DOMContentLoaded", () => {
         if (signalUpdateTimeout) clearTimeout(signalUpdateTimeout);
 
         signalUpdateTimeout = setTimeout(() => {
-            const currencyPair = currencySelect.value;
-            const timeframeText = document.getElementById("timeframe").value;
-            const cooldownDuration = parseTimeframeToMs(timeframeText);
+            try {
+                const currencyPair = currencySelect.value;
+                const timeframeText = document.getElementById("timeframe").value;
+                const cooldownDuration = parseTimeframeToMs(timeframeText);
 
-            const isBuy = Math.random() > 0.5;
-            const accuracy = (Math.random() * 10 + 85).toFixed(2);
-            const now = new Date().toLocaleTimeString("ru-RU", {
-                hour: "2-digit",
-                minute: "2-digit",
-                second: "2-digit"
-            });
+                const isBuy = Math.random() > 0.5;
+                const accuracy = (Math.random() * 10 + 85).toFixed(2);
+                const now = new Date().toLocaleTimeString("ru-RU", {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                    second: "2-digit"
+                });
 
-            const language = document.getElementById("language").value;
-            const directionText = isBuy ? translations[language].buy : translations[language].sell;
-            const icon = isBuy ? '↑' : '↓';
-            const signalDetails = `
-                <div class="signal-details">
-                    <div class="signal-pair">${currencyPair}</div>
-                    <div class="signal-direction ${isBuy ? "green" : "red"}">
-                        ${icon} ${directionText}
+                const language = document.getElementById("language").value;
+                const directionText = isBuy ? translations[language].buy : translations[language].sell;
+                const icon = isBuy ? '↑' : '↓';
+                const signalDetails = `
+                    <div class="signal-details">
+                        <div class="signal-pair">${currencyPair}</div>
+                        <div class="signal-direction ${isBuy ? "green" : "red"}">
+                            <span class="direction-icon">${icon}</span> ${directionText}
+                        </div>
+                        <div class="signal-timeframe">${translations[language].timeframe}: ${timeframeText}</div>
+                        <div class="signal-probability">${translations[language].accuracy}: ${accuracy}%</div>
                     </div>
-                    <div class="signal-timeframe">${translations[language].timeframe}: ${timeframeText}</div>
-                    <div class="signal-probability">${translations[language].accuracy}: ${accuracy}%</div>
-                </div>
-            `;
-            signalResult.innerHTML = signalDetails;
-            signalTime.textContent = now;
+                `;
+                signalResult.innerHTML = signalDetails;
+                signalTime.textContent = now;
 
-            const endTime = Date.now() + cooldownDuration;
+                // Анимация появления сигнала
+                signalResult.style.opacity = 0;
+                signalResult.style.transform = 'translateY(20px)';
+                setTimeout(() => {
+                    signalResult.style.opacity = 1;
+                    signalResult.style.transform = 'translateY(0)';
+                }, 100);
 
-            if (cooldowns[currencyPair]?.intervalId) {
-                clearInterval(cooldowns[currencyPair].intervalId);
+                const endTime = Date.now() + cooldownDuration;
+
+                if (cooldowns[currencyPair]?.intervalId) {
+                    clearInterval(cooldowns[currencyPair].intervalId);
+                }
+
+                cooldowns[currencyPair] = { endTime };
+                startCooldown(currencyPair);
+
+                // Обновление графика
+                updateChart(currencyPair, isBuy, accuracy);
+
+                generateButton.classList.remove('loading');
+            } catch (error) {
+                console.error(error);
+                signalResult.innerHTML = `<div class="signal-error">Ошибка генерации сигнала. Попробуйте снова.</div>`;
+                generateButton.disabled = false;
+                generateButton.textContent = translations[document.getElementById("language").value].generateButton;
+                generateButton.classList.remove('loading');
             }
-
-            cooldowns[currencyPair] = { endTime };
-            startCooldown(currencyPair);
-
-            // Обновление графика
-            updateChart(currencyPair, isBuy, accuracy);
-
-            generateButton.classList.remove('loading');
         }, 1000);
     });
 
@@ -86,6 +102,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
 function startCooldown(pair) {
     const generateButton = document.getElementById("generate-btn");
+    const progressBar = document.createElement('div');
+    progressBar.classList.add('progress-bar');
+    generateButton.appendChild(progressBar);
 
     function updateCooldown() {
         const now = Date.now();
@@ -97,10 +116,14 @@ function startCooldown(pair) {
             clearInterval(cooldowns[pair].intervalId);
             generateButton.disabled = false;
             generateButton.textContent = baseText;
+            progressBar.style.width = '0%';
             delete cooldowns[pair];
+            progressBar.remove();
         } else {
             generateButton.disabled = true;
             generateButton.textContent = `${baseText} (${remaining}s)`;
+            const progress = ((cooldowns[pair].endTime - now) / (cooldowns[pair].endTime - (cooldowns[pair].endTime - remaining * 1000))) * 100;
+            progressBar.style.width = `${progress}%`;
         }
     }
 
@@ -210,24 +233,89 @@ function updateChart(pair, isBuy, accuracy) {
         .attr("offset", "100%")
         .attr("stop-color", "rgba(0, 0, 0, 0)");
 
+    // Анимация области
     svg.append("path")
         .datum(data)
         .attr("fill", "url(#area-gradient)")
-        .attr("d", area);
+        .attr("d", area)
+        .attr("opacity", 0)
+        .transition()
+        .duration(1000)
+        .attr("opacity", 1);
 
-    svg.append("path")
+    // Анимация линии
+    const path = svg.append("path")
         .datum(data)
         .attr("fill", "none")
         .attr("stroke", isBuy ? "#00E676" : "#FF5252")
         .attr("stroke-width", 2.5)
         .attr("d", line);
 
+    const length = path.node().getTotalLength();
+    path.attr("stroke-dasharray", length + " " + length)
+        .attr("stroke-dashoffset", length)
+        .transition()
+        .duration(1500)
+        .ease(d3.easeLinear)
+        .attr("stroke-dashoffset", 0);
+
+    // Tooltips
+    const tooltip = d3.select("body").append("div")
+        .attr("class", "tooltip")
+        .style("opacity", 0)
+        .style("position", "absolute")
+        .style("background", "var(--bg-light)")
+        .style("border", "1px solid var(--border-color)")
+        .style("padding", "8px")
+        .style("border-radius", "4px")
+        .style("pointer-events", "none");
+
+    svg.selectAll("dot")
+        .data(data)
+        .enter().append("circle")
+        .attr("r", 4)
+        .attr("cx", d => x(d.time))
+        .attr("cy", d => y(d.value))
+        .attr("fill", isBuy ? "#00E676" : "#FF5252")
+        .attr("opacity", 0.7)
+        .on("mouseover", function(event, d) {
+            d3.select(this).attr("r", 6).attr("opacity", 1);
+            tooltip.transition().duration(200).style("opacity", .9);
+            tooltip.html(`Time: ${d.time}<br>Value: ${d.value.toFixed(2)}`)
+                .style("left", (event.pageX + 10) + "px")
+                .style("top", (event.pageY - 20) + "px");
+        })
+        .on("mouseout", function() {
+            d3.select(this).attr("r", 4).attr("opacity", 0.7);
+            tooltip.transition().duration(500).style("opacity", 0);
+        });
+
+    // Zoom and Pan
+    const zoom = d3.zoom()
+        .scaleExtent([1, 5])
+        .translateExtent([[0, 0], [width, height]])
+        .on("zoom", zoomed);
+
+    svg.call(zoom);
+
+    function zoomed(event) {
+        const newX = event.transform.rescaleX(x);
+        const newY = event.transform.rescaleY(y);
+        svg.selectAll("path.line").attr("d", line.x(d => newX(d.time)));
+        svg.selectAll("path.area").attr("d", area.x(d => newX(d.time)).y1(d => newY(d.value)));
+        svg.selectAll("circle").attr("cx", d => newX(d.time)).attr("cy", d => newY(d.value));
+        svg.select(".x-axis").call(d3.axisBottom(newX));
+        svg.select(".y-axis").call(d3.axisLeft(newY));
+    }
+
     svg.append("g")
+        .attr("class", "x-axis")
         .attr("transform", `translate(0,${height - margin.bottom})`)
         .call(d3.axisBottom(x).ticks(5).tickSizeOuter(0))
         .attr("color", "#555");
 
     svg.append("g")
+        .attr("class", "y-axis")
         .attr("transform", `translate(${margin.left},0)`)
         .call(d3.axisLeft(y).ticks(5).tickSizeOuter(0))
         .attr("color", "#555");
@@ -309,4 +397,11 @@ function changeLanguage() {
     });
 
     resetSignalAndChart();
+}
+
+function toggleTheme() {
+    const body = document.body;
+    const isDark = document.getElementById('theme-switch').checked;
+    body.classList.toggle('dark-theme', isDark);
+    body.classList.toggle('light-theme', !isDark);
 }
