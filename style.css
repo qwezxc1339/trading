@@ -73,6 +73,7 @@ body {
     border-right: 1px solid var(--border-color);
     transition: transform var(--transition-fast), opacity 0.5s ease;
     animation: slideInLeft 0.8s ease-out;
+    position: relative;
 }
 
 @keyframes slideInLeft {
@@ -335,12 +336,8 @@ select:focus {
     margin-top: 20px;
     padding-top: 20px;
     border-top: 1px solid var(--border-color);
-}
-
-.theme-toggle {
-    display: flex;
-    align-items: center;
-    gap: 10px;
+    left: 30px;
+    width: calc(100% - 60px);
 }
 
 .theme-toggle label {
@@ -421,6 +418,13 @@ select:focus {
     select, #generate-btn {
         padding: 16px;
         font-size: 16px;
+    }
+
+    .language-selector, .theme-toggle {
+        position: static;
+        left: auto;
+        top: auto;
+        width: auto;
     }
 }
 
