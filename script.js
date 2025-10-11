@@ -51,7 +51,7 @@ document.addEventListener("DOMContentLoaded", () => {
                             <span class="direction-icon">${icon}</span> ${directionText}
                         </div>
                         <div class="signal-timeframe">${translations[language].timeframe}: ${timeframeText}</div>
-                        <div class="signal-probability">${translations[language].accuracy}: ${accuracy}%</div>
+                        <div class="signal-probability">${translations[language].accuracy} ${accuracy}%</div>
                     </div>
                 `;
                 signalResult.innerHTML = signalDetails;
@@ -341,6 +341,7 @@ const translations = {
         signalTitle: "Сигнал",
         signalPlaceholder: "Нажмите 'Получить сигнал'",
         languageLabel: "Язык",
+        themeLabel: "Тема",
         timeframes: ["5 секунд", "15 секунд", "1 минута", "3 минуты", "5 минут", "10 минут"],
         buy: "Купить",
         sell: "Продать",
@@ -356,6 +357,7 @@ const translations = {
         signalTitle: "Signal",
         signalPlaceholder: "Click 'Get Signal'",
         languageLabel: "Language",
+        themeLabel: "Theme",
         timeframes: ["5 seconds", "15 seconds", "1 minute", "3 minutes", "5 minutes", "10 minutes"],
         buy: "Buy",
         sell: "Sell",
@@ -371,6 +373,7 @@ const translations = {
         signalTitle: "Signal",
         signalPlaceholder: "Signal Olish uchun bosing",
         languageLabel: "Til",
+        themeLabel: "Mavzu",
         timeframes: ["5 soniya", "15 soniya", "1 daqiqa", "3 daqiqa", "5 daqiqa", "10 daqiqa"],
         buy: "Sotib olish",
         sell: "Sotish",
@@ -387,15 +390,14 @@ function changeLanguage() {
     document.getElementById("timeframe-label").textContent = translations[language].timeframeLabel;
     document.getElementById("generate-btn").textContent = translations[language].generateButton;
     document.getElementById("signal-title").textContent = translations[language].signalTitle;
+    document.getElementById("language-label").textContent = translations[language].languageLabel;
+    document.getElementById("theme-label").textContent = translations[language].themeLabel;
 
     const signalResult = document.getElementById("signal-result");
     const signalPlaceholder = signalResult.querySelector(".signal-placeholder");
     if (signalPlaceholder) {
         signalPlaceholder.textContent = translations[language].signalPlaceholder;
     }
-
-    const languageLabel = document.querySelector(".language-selector label");
-    if (languageLabel) languageLabel.textContent = translations[language].languageLabel;
 
     const timeframeSelect = document.getElementById("timeframe");
     const timeframes = translations[language].timeframes;
