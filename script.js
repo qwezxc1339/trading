@@ -5,10 +5,10 @@ document.addEventListener("DOMContentLoaded", () => {
     const generateButton = document.getElementById("generate-btn");
     const signalResult = document.getElementById("signal-result");
     const signalTime = document.getElementById("signal-time");
-    const customSelects = document.querySelectorAll('.custom-select');
+    const currencySelect = document.getElementById("currency-pair");
 
     let signalUpdateTimeout = null;
-    currentPair = document.querySelector('#currency-label').textContent;
+    currentPair = currencySelect.value;
 
     // Lazy loading для графика
     const chartElement = document.getElementById("chart");
@@ -18,45 +18,6 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }, { threshold: 0.1 });
     observer.observe(chartElement);
-
-    // Обработчики для кастомных селектов
-    customSelects.forEach(select => {
-        const selectedOption = select.querySelector('.selected-option');
-        const options = select.querySelector('.options');
-        const items = options.querySelectorAll('li');
-
-        selectedOption.addEventListener('click', () => {
-            options.style.display = options.style.display === 'block' ? 'none' : 'block';
-            select.classList.toggle('active');
-        });
-
-        items.forEach(item => {
-            item.addEventListener('click', () => {
-                selectedOption.textContent = item.textContent;
-                options.style.display = 'none';
-                select.classList.remove('active');
-
-                const selectType = select.getAttribute('data-select');
-                const value = item.getAttribute('data-value');
-
-                if (selectType === 'language') {
-                    changeLanguage(value);
-                } else if (selectType === 'theme') {
-                    toggleTheme(value);
-                } else if (selectType === 'currency-pair') {
-                    currentPair = value;
-                    if (cooldowns[currentPair] && cooldowns[currentPair].endTime > Date.now()) {
-                        startCooldown(currentPair);
-                    } else {
-                        generateButton.disabled = false;
-                        generateButton.textContent = translations[value || document.getElementById("language").value].generateButton;
-                    }
-                } else if (selectType === 'timeframe') {
-                    // Обновление времени, если нужно
-                }
-            });
-        });
-    });
 
     generateButton.addEventListener("click", () => {
         generateButton.disabled = true;
@@ -68,8 +29,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
         signalUpdateTimeout = setTimeout(() => {
             try {
-                const currencyPair = currentPair;
-                const timeframeText = document.querySelector('#timeframe-label').textContent;
+                const currencyPair = currencySelect.value;
+                const timeframeText = document.getElementById("timeframe").value;
                 const cooldownDuration = parseTimeframeToMs(timeframeText);
 
                 const isBuy = Math.random() > 0.5;
@@ -80,7 +41,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     second: "2-digit"
                 });
 
-                const language = document.querySelector('#language-label').textContent === 'Язык' ? 'ru' : document.querySelector('#language-label').textContent === 'English' ? 'en' : 'uz';
+                const language = document.getElementById("language").value;
                 const directionText = isBuy ? translations[language].buy : translations[language].sell;
                 const icon = isBuy ? '↑' : '↓';
                 const signalDetails = `
@@ -127,20 +88,27 @@ document.addEventListener("DOMContentLoaded", () => {
         }, 1000);
     });
 
-    // Закрытие выпадающих меню при клике вне
-    document.addEventListener('click', (e) => {
-        customSelects.forEach(select => {
-            if (!select.contains(e.target)) {
-                select.querySelector('.options').style.display = 'none';
-                select.classList.remove('active');
-            }
-        });
+    currencySelect.addEventListener("change", () => {
+        const newPair = currencySelect.value;
+
+        if (cooldowns[currentPair]?.intervalId) {
+            clearInterval(cooldowns[currentPair].intervalId);
+        }
+
+        currentPair = newPair;
+
+        if (cooldowns[newPair] && cooldowns[newPair].endTime > Date.now()) {
+            startCooldown(newPair);
+        } else {
+            generateButton.disabled = false;
+            generateButton.textContent = translations[document.getElementById("language").value].generateButton;
+        }
     });
 
     // Загрузка сохранённой темы
     const savedTheme = localStorage.getItem("theme") || "dark";
     document.body.classList.add(savedTheme + "-theme");
-    document.querySelector('#theme-label').textContent = savedTheme === 'dark' ? 'Тёмная' : 'Светлая';
+    document.getElementById("theme-select").value = savedTheme;
 });
 
 function startCooldown(pair) {
@@ -152,7 +120,7 @@ function startCooldown(pair) {
     function updateCooldown() {
         const now = Date.now();
         const remaining = Math.ceil((cooldowns[pair].endTime - now) / 1000);
-        const language = document.querySelector('#language-label').textContent === 'Язык' ? 'ru' : document.querySelector('#language-label').textContent === 'English' ? 'en' : 'uz';
+        const language = document.getElementById("language").value;
         const baseText = translations[language].generateButton;
 
         if (remaining <= 0) {
@@ -191,9 +159,8 @@ function parseTimeframeToMs(timeframeText) {
 function resetSignalAndChart() {
     const signalResult = document.getElementById("signal-result");
     const signalTime = document.getElementById("signal-time");
-    const language = document.querySelector('#language-label').textContent === 'Язык' ? 'ru' : document.querySelector('#language-label').textContent === 'English' ? 'en' : 'uz';
 
-    signalResult.innerHTML = `<div class="signal-placeholder">${translations[language].signalPlaceholder}</div>`;
+    signalResult.innerHTML = `<div class="signal-placeholder">${translations[document.getElementById("language").value].signalPlaceholder}</div>`;
     signalTime.textContent = "";
     initChart();
 }
@@ -415,39 +382,40 @@ const translations = {
     }
 };
 
-function changeLanguage(language) {
-    const selectedLanguage = language || (document.querySelector('#language-label').textContent === 'Язык' ? 'ru' : document.querySelector('#language-label').textContent === 'English' ? 'en' : 'uz');
-    document.getElementById("logo-text").textContent = translations[selectedLanguage].logoText;
-    document.getElementById("currency-label").textContent = translations[selectedLanguage].currencyLabel;
-    document.getElementById("timeframe-label").textContent = translations[selectedLanguage].timeframeLabel;
-    generateButton.textContent = translations[selectedLanguage].generateButton;
-    document.getElementById("signal-title").textContent = translations[selectedLanguage].signalTitle;
-    document.getElementById("language-label").textContent = translations[selectedLanguage].languageLabel;
-    document.getElementById("theme-label").textContent = translations[selectedLanguage].themeLabel;
+function changeLanguage() {
+    const language = document.getElementById("language").value;
+
+    document.getElementById("logo-text").textContent = translations[language].logoText;
+    document.getElementById("currency-label").textContent = translations[language].currencyLabel;
+    document.getElementById("timeframe-label").textContent = translations[language].timeframeLabel;
+    document.getElementById("generate-btn").textContent = translations[language].generateButton;
+    document.getElementById("signal-title").textContent = translations[language].signalTitle;
+    document.getElementById("language-label").textContent = translations[language].languageLabel;
+    document.getElementById("theme-label").textContent = translations[language].themeLabel;
 
     const signalResult = document.getElementById("signal-result");
     const signalPlaceholder = signalResult.querySelector(".signal-placeholder");
     if (signalPlaceholder) {
-        signalPlaceholder.textContent = translations[selectedLanguage].signalPlaceholder;
+        signalPlaceholder.textContent = translations[language].signalPlaceholder;
     }
 
-    const timeframeSelect = document.querySelector('#timeframe-label');
-    const timeframes = translations[selectedLanguage].timeframes;
-    timeframeSelect.textContent = timeframes[0]; // Устанавливаем первый элемент по умолчанию
-    const options = document.querySelectorAll('#timeframe .options li');
-    options.forEach((option, index) => {
-        option.textContent = timeframes[index];
-        option.setAttribute('data-value', timeframes[index]);
+    const timeframeSelect = document.getElementById("timeframe");
+    const timeframes = translations[language].timeframes;
+    timeframeSelect.innerHTML = "";
+    timeframes.forEach(timeframe => {
+        const option = document.createElement("option");
+        option.textContent = timeframe;
+        timeframeSelect.appendChild(option);
     });
 
     resetSignalAndChart();
 }
 
-function toggleTheme(theme) {
-    const selectedTheme = theme || (document.querySelector('#theme-label').textContent === 'Тёмная' ? 'dark' : 'light');
+function toggleTheme() {
+    const theme = document.getElementById("theme-select").value;
     document.body.classList.remove("dark-theme", "light-theme");
-    document.body.classList.add(selectedTheme + "-theme");
-    localStorage.setItem("theme", selectedTheme);
+    document.body.classList.add(theme + "-theme");
+    localStorage.setItem("theme", theme);
     // Анимация перехода темы
     document.body.style.transition = "background-color 0.5s ease, color 0.5s ease";
     setTimeout(() => {
